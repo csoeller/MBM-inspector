@@ -219,7 +219,8 @@ class MBMCollectionDF(object): # collection based on dataframe objects
                 tracenum += 1
                 colnum += 1
 
-            fig.update_layout(autosize=False, height=700,title_text="aligned MBM tracks along %s" % axis)
+            fig.update_layout(autosize=False, height=700,title_text="aligned MBM tracks along %s" % axis,
+                              legend_title_text='Bead Selection') # we set a "long" legend title so that the legend does not change width when we change beads etc
             # Update axes properties
             fig.update_xaxes(title_text="time (s)", row=1, col=1)
             fig.update_xaxes(title_text="time (s)", row=2, col=1)
@@ -238,7 +239,8 @@ class MBMCollectionDF(object): # collection based on dataframe objects
             dfplot = startdf
             dfplotg = dfplot[[bead for bead in self.beadisgood if self.beadisgood[bead]]]
             fig = px.line(dfplotg)
-            fig.update_layout(xaxis_title="time (s)", yaxis_title=yaxis_title, title_text=title, height=300)
+            fig.update_layout(xaxis_title="time (s)", yaxis_title=yaxis_title, title_text=title, height=300,
+                              legend_title_text='Bead Selection') # we set a "long" legend title so that the legend does not change width when we change beads etc
             if axis.startswith('std'):
                 fig.update_yaxes(range = (0,np.max([10.0,dfplotg.max().max()])))
 
