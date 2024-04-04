@@ -1,8 +1,11 @@
-from dash import Dash, html, dcc, callback, Output, Input
+from dash import Dash, html, dcc, callback, Output, Input, State
 import dash
 import plotly.express as px
 import pandas as pd
 import dash_bootstrap_components as dbc # we pip installed this one
+
+import base64
+import io
 
 from MBMcollection import MBMCollectionDF
 # print(dash.__version__)
@@ -21,13 +24,24 @@ beads = list(mbm.beadisgood.keys())
 app.layout = html.Div(style={'padding': '2rem'},
                       children=[
                           html.H1(children='MBM Inspector', style={'textAlign':'center'}),
-                          html.P("Select dataset:"),
-                          dcc.Dropdown(
-                              id="dropdown",
-                              options=list(datasources.keys()),
-                              value=list(datasources.keys())[0],
-                              clearable=False,
+                          dcc.Upload(
+                              id='upload-data',
+                              children=html.Div([
+                                  'Drag and Drop or ',
+                                  html.A('Select File')
+                              ]),
+                              style={
+                                  'width': '100%',
+                                  'height': '60px',
+                                  'lineHeight': '60px',
+                                  'borderWidth': '1px',
+                                  'borderStyle': 'dashed',
+                                  'borderRadius': '5px',
+                                  'textAlign': 'center',
+                                  'margin': '10px'
+                              },
                           ),
+                          html.H3(children='FILENAME', style={'textAlign':'center'}, id='filename-label'),
                           dbc.Checklist(beads, beads,
                                         inline=True,
                                         id='bead-selection'),
@@ -53,20 +67,47 @@ def update_graph(selectedbeads,axis):
     stddevfig = mbm.plot_tracks("std_%s" % axis)
     return (mainfig,stddevfig)
 
+# @callback(
+#     Output('bead-selection', 'options'),
+#     Output('bead-selection', 'value'),
+#     Input('dropdown', 'value'),
+# )
+# def update_dataset(datasource_key):
+#     global mbm
+#     mbm = MBMCollectionDF(filename=datasources[datasource_key],
+#                       plotbad=True)
+#     options = []
+#     for bead in mbm.beadisgood:
+#         options.append(bead)
+
+#     return (options,options)
+
 @callback(
     Output('bead-selection', 'options'),
     Output('bead-selection', 'value'),
-    Input('dropdown', 'value'),
+    Output('filename-label', 'children'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename'),
 )
-def update_dataset(datasource_key):
+def update_output(contents, filename):
     global mbm
-    mbm = MBMCollectionDF(filename=datasources[datasource_key],
-                      plotbad=True)
+    
+    content_type, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string)
+    
+    try:
+        if 'npz' in filename:
+            # Assume that the user uploaded an npz file
+            mbm = MBMCollectionDF(filename=io.BytesIO(decoded),
+                                  plotbad=True)
+    except Exception as e:
+        print(e)
+
     options = []
     for bead in mbm.beadisgood:
         options.append(bead)
 
-    return (options,options)
+    return (options,options,filename)    
 
 if __name__ == '__main__':
     app.run(debug=True)
