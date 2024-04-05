@@ -3,6 +3,7 @@ import dash
 import plotly.express as px
 import pandas as pd
 import dash_bootstrap_components as dbc # we pip installed this one
+import numpy as np
 
 import base64
 import io
@@ -13,11 +14,12 @@ from MBMcollection import MBMCollectionDF
 datasources = { 'data 1' : 'assets/240328-142406_sE_3D_U2OS_NPC_560_blank__MBM-beads.npz',
                 'data 2' : 'assets/240328-105801_sB_3D_U2OS_NPC_560_blank__MBM-beads.npz' }
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.COSMO])
+app = Dash(__name__, external_stylesheets=[dbc.themes.JOURNAL])
 #app = Dash(__name__)
 
 # temporary way of running with local data
-mbm = MBMCollectionDF(filename='assets/240328-142406_sE_3D_U2OS_NPC_560_blank__MBM-beads.npz',
+mbm = MBMCollectionDF(name=datasources['data 1'],
+                      fileinput=datasources['data 1'],
                       plotbad=True)
 beads = list(mbm.beadisgood.keys())
 
@@ -42,6 +44,13 @@ app.layout = html.Div(style={'padding': '2rem'},
                               },
                           ),
                           html.H3(children='FILENAME', style={'textAlign':'center'}, id='filename-label'),
+                          html.P("Median Filter"),
+                          html.Div(
+                              dcc.Slider(0, 21, 1,
+                                         value=5,
+                                         id='median-slider'
+                                         ),
+                              style={'width':'25%'}),                        
                           dbc.Checklist(beads, beads,
                                         inline=True,
                                         id='bead-selection'),
@@ -51,6 +60,8 @@ app.layout = html.Div(style={'padding': '2rem'},
                               value="x",
                               inline=True,
                           ),
+                          html.Button("Download JSON", id="btn_json"),
+                          dcc.Download(id="download-dataframe-json"),
                           dcc.Graph(id='main-graph'),
                           dcc.Graph(id='stddev-graph')
                       ])
@@ -59,10 +70,12 @@ app.layout = html.Div(style={'padding': '2rem'},
     Output('main-graph', 'figure'),
     Output('stddev-graph', 'figure'),
     Input('bead-selection', 'value'),
-    Input('axes','value')
+    Input('axes','value'),
+    Input('median-slider','value'),
 )
-def update_graph(selectedbeads,axis):
+def update_graph(selectedbeads,axis,median_window):
     mbm.markasgood_only(*selectedbeads)
+    mbm.median_window = median_window
     mainfig = mbm.plot_tracks(axis)
     stddevfig = mbm.plot_tracks("std_%s" % axis)
     return (mainfig,stddevfig)
@@ -88,6 +101,7 @@ def update_graph(selectedbeads,axis):
     Output('filename-label', 'children'),
     Input('upload-data', 'contents'),
     State('upload-data', 'filename'),
+    prevent_initial_call=True,
 )
 def update_output(contents, filename):
     global mbm
@@ -98,7 +112,7 @@ def update_output(contents, filename):
     try:
         if 'npz' in filename:
             # Assume that the user uploaded an npz file
-            mbm = MBMCollectionDF(filename=io.BytesIO(decoded),
+            mbm = MBMCollectionDF(name=filename,fileinput=io.BytesIO(decoded),
                                   plotbad=True)
     except Exception as e:
         print(e)
@@ -108,6 +122,19 @@ def update_output(contents, filename):
         options.append(bead)
 
     return (options,options,filename)    
+
+@callback(
+    Output("download-dataframe-json", "data"),
+    Input("btn_json", "n_clicks"),
+    prevent_initial_call=True,
+)
+def btnfunc(n_clicks):
+    fname = "%s-settings.json" % mbm.name
+    dfsettings = pd.DataFrame(mbm.beadisgood, index=np.array([0]))
+    dfsettings['median_window'] = mbm.median_window
+    dfsettings['Filename'] = mbm.name
+    return dcc.send_data_frame(dfsettings.to_json,fname)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

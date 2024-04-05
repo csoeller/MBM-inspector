@@ -114,7 +114,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 class MBMCollectionDF(object): # collection based on dataframe objects
-    def __init__(self,name=None,filename=None,variance_window = 9, plotbad = False):
+    def __init__(self,name=None,fileinput=None,variance_window = 9, plotbad = False):
         self.mbms = {}
         self.beadisgood = {}
         self.t = None
@@ -124,15 +124,13 @@ class MBMCollectionDF(object): # collection based on dataframe objects
         self.median_window = 0 # 0 means not active
         self.plotbad = plotbad
         
-        if filename is not None:
-            self.populate_df_from_npz(filename)
-        else:
-            self.name = name
+        self.name = name
+        if fileinput is not None:
+            self.populate_df_from_npz(fileinput)
 
-    def populate_df_from_npz(self,filename):
+    def populate_df_from_npz(self,fileinput):
         # this is a MBM bead file with raw bead tracks
-        self.name=filename
-        self._raw_beads = np.load(filename)
+        self._raw_beads = np.load(fileinput)
         self.beads = df_from_interp_beads(self._raw_beads)
         self.t = self.beads['x'].index
         
