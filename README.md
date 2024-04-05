@@ -1,5 +1,9 @@
 # MBM-inspector
 
+`MBM-inspector` is a [dash app](https://dash.plotly.com/) designed to read and manipulate MBM data that was saved in `.npz` format using our 
+[extract_MBMinfo](https://github.com/csoeller/MINFLUX-AI-scripts/blob/main/extract_MBMinfo.py) script from our
+[MINFLUX-AI-scripts](https://github.com/csoeller/MINFLUX-AI-scripts) repo.
+
 ### Synopsis
 
 A fairly simple dash application to edit MBM trajectory generation.
@@ -46,11 +50,11 @@ Dash is running on http://127.0.0.1:8050/
  * Debug mode: on
 ```
 
-Note the URL to which you now need to point your browser
+Note the URL to which you now need to point your browser (on windows I seem to be able to `Ctrl-click` the URL in the terminal and my browser opens it ok).
 
 ### Access App in your browser
 
-Open the URL that was printed out in your browser. In our example above, paste the `http://127.0.0.1:8050/` into your browser to open this URL and see the MBM-inspector app at work.
+Open the URL that was printed out in your browser. In our example above, paste the `http://127.0.0.1:8050/` into your browser to open this URL and see the MBM-inspector app at work. Note that on windows in the command terminal one seems to be able to `Ctrl-click` the URL in the terminal and the browser opens it from there.
 
 ### Using the app
 
