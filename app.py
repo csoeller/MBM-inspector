@@ -7,6 +7,7 @@ import numpy as np
 
 import base64
 import io
+import json
 
 from MBMcollection import MBMCollectionDF
 # print(dash.__version__)
@@ -130,11 +131,11 @@ def update_output(contents, filename):
 )
 def btnfunc(n_clicks):
     fname = "%s-settings.json" % mbm.name
-    dfsettings = pd.DataFrame(mbm.beadisgood, index=np.array([0]))
-    dfsettings['median_window'] = mbm.median_window
-    dfsettings['Filename'] = mbm.name
-    return dcc.send_data_frame(dfsettings.to_json,fname)
-
+    settings = {}
+    settings['beads'] = mbm.beadisgood.copy()
+    settings['Median_window'] = mbm.median_window
+    settings['Filename'] = mbm.name
+    return dict(content=json.dumps(settings, indent=4),filename=fname)
 
 if __name__ == '__main__':
     app.run(debug=True)
