@@ -20,6 +20,7 @@ In a nutshell, the commands are:
 
 ```shell
 conda create --name dash-py310 --channel conda-forge python=3.10
+conda activate dash-py310
 conda install -c conda-forge dash
 conda install -c conda-forge pandas
 
