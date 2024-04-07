@@ -15,10 +15,12 @@ from MBMcollection import MBMCollectionDF
 datasources = { 'data 1' : 'assets/240328-142406_sE_3D_U2OS_NPC_560_blank__MBM-beads.npz',
                 'data 2' : 'assets/240328-105801_sB_3D_U2OS_NPC_560_blank__MBM-beads.npz' }
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.JOURNAL])
-#app = Dash(__name__)
+app = Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
 
-# temporary way of running with local data
+# at startup run with local data
+# note that we make the app for now run with a "global" variable mbm
+# NOTE: this will break running several tabs with different data sets
+# but is deemed ok for now as a proof of concept
 mbm = MBMCollectionDF(name=datasources['data 1'],
                       fileinput=datasources['data 1'],
                       plotbad=True)
@@ -46,12 +48,12 @@ app.layout = html.Div(style={'padding': '2rem'},
                           ),
                           html.H3(children='FILENAME', style={'textAlign':'center'}, id='filename-label'),
                           html.P("Median Filter"),
-                          html.Div(
+                          html.Div( # placing it in a Div allows us to set the width as a percentage of window width
                               dcc.Slider(0, 21, 1,
                                          value=5,
                                          id='median-slider'
                                          ),
-                              style={'width':'25%'}),                        
+                              style={'width':'25%'}),
                           dbc.Checklist(beads, beads,
                                         inline=True,
                                         id='bead-selection'),
@@ -62,11 +64,12 @@ app.layout = html.Div(style={'padding': '2rem'},
                               inline=True,
                           ),
                           html.Button("Download JSON", id="btn_json"),
-                          dcc.Download(id="download-dataframe-json"),
+                          dcc.Download(id="download-json"),
                           dcc.Graph(id='main-graph'),
                           dcc.Graph(id='stddev-graph')
                       ])
 
+# call back when any of the bead, axis or median filter selection changes
 @callback(
     Output('main-graph', 'figure'),
     Output('stddev-graph', 'figure'),
@@ -81,21 +84,8 @@ def update_graph(selectedbeads,axis,median_window):
     stddevfig = mbm.plot_tracks("std_%s" % axis)
     return (mainfig,stddevfig)
 
-# @callback(
-#     Output('bead-selection', 'options'),
-#     Output('bead-selection', 'value'),
-#     Input('dropdown', 'value'),
-# )
-# def update_dataset(datasource_key):
-#     global mbm
-#     mbm = MBMCollectionDF(filename=datasources[datasource_key],
-#                       plotbad=True)
-#     options = []
-#     for bead in mbm.beadisgood:
-#         options.append(bead)
-
-#     return (options,options)
-
+# call back that updates the bead list and also the filename when new data is uploaded
+# updating the bead list will in turn trigger the callback above which will generate a new set of plots
 @callback(
     Output('bead-selection', 'options'),
     Output('bead-selection', 'value'),
@@ -124,8 +114,10 @@ def update_output(contents, filename):
 
     return (options,options,filename)    
 
+# this callback is triggered when the Download JSON button is pressed
+# and generates a JSON file that is downloaded to disk
 @callback(
-    Output("download-dataframe-json", "data"),
+    Output("download-json", "data"),
     Input("btn_json", "n_clicks"),
     prevent_initial_call=True,
 )
