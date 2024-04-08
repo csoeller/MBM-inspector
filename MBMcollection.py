@@ -61,6 +61,9 @@ def interp_beads(beads,customdict=None,extrapisnan=False):
     # here we may need some checks if some bead tracks are a lot shorter than others (does this occur)?
     # this could lead to issues with interpolation unless these go to zero
     # so watch out for cases like that and consider code tweaks if needed
+
+    # note that by default we interpolate all tracks onto a 1 s spaced time series
+    # we could make the interpolation sampling rate a varaibale but for now 1 s spacing seems ok
     tnew = np.arange(np.round(mint),np.round(maxt)+1)
     ibeads = {}
 
@@ -95,6 +98,9 @@ def df_from_interp_beads(beads,customdict=None):
     
     return dfbeads
 
+
+# the code below would only be used if we implement caching some of the calculations
+# for now not used but leave in for now if we run into performance issues at some stage
 import hashlib
 import json
 # we use this function to generate a unique hash from a dictionary
@@ -112,7 +118,9 @@ def hashdf(df):
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
+# pandas dataframe based handling of MBM bead trajectories
+# the good support for missing values, averaging across columns and rolling filters
+# makes this quite a neat way to handle the basic calculations that we typically need
 class MBMCollectionDF(object): # collection based on dataframe objects
     def __init__(self,name=None,fileinput=None,variance_window = 9, plotbad = False):
         self.mbms = {}
@@ -121,7 +129,7 @@ class MBMCollectionDF(object): # collection based on dataframe objects
         self.tperiod = None
         self._trange= (None,None)
         self.variance_window = variance_window # by default use last 9 localisations for variance/std calculation
-        self.median_window = 0 # 0 means not active
+        self.median_window = 0 # 0 for median window means "no median filtering"
         self.plotbad = plotbad
         
         self.name = name
@@ -185,10 +193,13 @@ class MBMCollectionDF(object): # collection based on dataframe objects
             fig1 = px.line(dfplotg)
             fig1.add_trace(go.Scatter(x=self.t, y=dfplotg.mean(axis=1), name='Mean',
                                      line=dict(color='firebrick', dash='dash')))
-            fig2 = px.line(dfplotg.sub(dfplotg.mean(axis=1),axis=0))
+            fig2 = px.line(dfplotg.sub(dfplotg.mean(axis=1),axis=0)) # subtract the mean from all the good traces to get the deviation from the mean
 
             fig = make_subplots(rows=2, cols=1)
 
+            # most of the code below is to tweak the plotly trace coloring and legend making, overplotting etc
+            # so things look good and clear eventually
+            #
             # we use explicit trace coloring and legend ranking to "survive" the trace reordering below when 'bad' beads are plotted as well
             col_dict = px.colors.qualitative.Plotly
             dict_len = len(col_dict)
