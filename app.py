@@ -62,7 +62,12 @@ app.layout = html.Div(style={'padding': '2rem'},
                           ),
                           dbc.Stack(
                               [
-                                  html.Button("Lowess Filter", id="btn_lowess"),
+                                  dbc.Button("Lowess Filter", id="btn_lowess"),
+                                  dbc.Tooltip(
+                                      "Press to generate a lowess filtered mean trajectory (lowess fraction as in slider to right)",
+                                      target='btn_lowess',
+                                      placement='right',
+                                  ),
                                   html.Div( # placing it in a Div allows us to set the width as a percentage of window width
                                       dcc.Slider(0.025, 0.2, 0.025,
                                                  value=0.1,
@@ -84,14 +89,19 @@ app.layout = html.Div(style={'padding': '2rem'},
 #                          html.Div(
 #                              html.Button("Lowess Filter", id="btn_lowess"),
 #                              ),
-                          html.Button("Download JSON Settings", id="btn_json"),
+                          dbc.Button("Download JSON Settings", id="btn_json"),
+                          dbc.Tooltip(
+                                      "Download the currently selected bead settings to a JSON file",
+                                      target='btn_json',
+                                      placement='right',
+                                  ),
                           dcc.Download(id="download-json"),
                           dcc.Upload(
                               id='upload-json',
                               children=html.Div([
                                   'Drag and Drop or ',
                                   html.A('Select JSON Settings File')
-                              ]),
+                              ], id='upload-json-txt'),
                               style={
                                   'width': '30%',
                                   'height': '60px',
@@ -105,6 +115,11 @@ app.layout = html.Div(style={'padding': '2rem'},
                               # single file to be uploaded
                               multiple=False
                           ),
+                          dbc.Tooltip(
+                                      "load bead settings from a previously saved JSON bead settings file",
+                                      target='upload-json-txt',
+                                      placement='right',
+                                  ),
                           dcc.Graph(id='main-graph'),
                           dcc.Graph(id='stddev-graph')
                       ])
