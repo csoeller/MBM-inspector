@@ -48,20 +48,30 @@ app.layout = html.Div(style={'padding': '2rem'},
                               },
                           ),
                           html.H3(children='FILENAME', style={'textAlign':'center'}, id='filename-label'),
-                          html.P("Median Filter"),
-                          html.Div( # placing it in a Div allows us to set the width as a percentage of window width
-                              dcc.Slider(0, 21, 1,
-                                         value=5,
-                                         id='median-slider'
-                                         ),
-                              style={'width':'25%'}),
-                          html.Div([ # placing it in a Div allows us to set the width as a percentage of window width
-                              dcc.Slider(0.025, 0.2, 0.025,
-                                         value=0.1,
-                                         id='lowess-slider'
-                                         ),
-                              html.Button("Lowess Filter", id="btn_lowess"),],
-                              style={'width':'25%'}),
+                          dbc.Stack(
+                              [
+                                  html.A("Median Filter"),
+                                  html.Div( # placing it in a Div allows us to set the width as a percentage of window width
+                                      dcc.Slider(0, 21, 1,
+                                                 value=5,
+                                                 id='median-slider'
+                                                 ),
+                                      style={'width':'25%'}),
+                              ],
+                              direction="horizontal",
+                          ),
+                          dbc.Stack(
+                              [
+                                  html.Button("Lowess Filter", id="btn_lowess"),
+                                  html.Div( # placing it in a Div allows us to set the width as a percentage of window width
+                                      dcc.Slider(0.025, 0.2, 0.025,
+                                                 value=0.1,
+                                                 id='lowess-slider'
+                                                 ),
+                                      style={'width':'25%'}),
+                              ],
+                              direction="horizontal",
+                          ),
                           dbc.Checklist(beads, beads,
                                         inline=True,
                                         id='bead-selection'),
