@@ -160,7 +160,7 @@ class MBMCollectionDF(object): # collection based on dataframe objects
             if bead in self.beads['x']:
                 self.beadisgood[bead] = True
 
-    def plot_tracks(self,axis,unaligned=False,tmin=None,tmax=None):
+    def plot_tracks(self,axis,unaligned=False,tmin=None,tmax=None,lowess_frac=None):
         if tmin is None:
             tmin=self._trange[0]
         if tmax is None:
@@ -193,6 +193,11 @@ class MBMCollectionDF(object): # collection based on dataframe objects
             fig1 = px.line(dfplotg)
             fig1.add_trace(go.Scatter(x=self.t, y=dfplotg.mean(axis=1), name='Mean',
                                      line=dict(color='firebrick', dash='dash')))
+            if not lowess_frac is None:
+                from statsmodels.nonparametric.smoothers_lowess import lowess
+                ltrace = lowess(dfplotg.mean(axis=1), self.t, frac=lowess_frac, return_sorted=False)
+                fig1.add_trace(go.Scatter(x=self.t, y=ltrace, name='Lowess',
+                                     line=dict(color='yellow', dash='dash')))
             fig2 = px.line(dfplotg.sub(dfplotg.mean(axis=1),axis=0)) # subtract the mean from all the good traces to get the deviation from the mean
 
             fig = make_subplots(rows=2, cols=1)
