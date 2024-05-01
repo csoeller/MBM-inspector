@@ -34,7 +34,7 @@ app.layout = html.Div(style={'padding': '2rem'},
                               id='upload-data',
                               children=html.Div([
                                   'Drag and Drop or ',
-                                  html.A('Select File')
+                                  html.A('Select Beat Data File (.npz format)')
                               ]),
                               style={
                                   'width': '100%',
@@ -89,9 +89,9 @@ app.layout = html.Div(style={'padding': '2rem'},
 #                          html.Div(
 #                              html.Button("Lowess Filter", id="btn_lowess"),
 #                              ),
-                          dbc.Button("Download JSON Settings", id="btn_json"),
+                          dbc.Button("Download Current Settings", id="btn_json"),
                           dbc.Tooltip(
-                                      "Download the currently selected bead settings to a JSON file",
+                                      "Download the currently selected bead and filter settings to a JSON file",
                                       target='btn_json',
                                       placement='right',
                                   ),
@@ -192,10 +192,10 @@ def update_output_json(contents, filename):
             # need to add check that beads match the beads in this mbm dataset
             return [bead for bead in settings['beads'] if settings['beads'][bead]]
         else:
-            logging.warn('no beads in settings')
+            logging.warning('no beads in settings')
             return dash.no_update
     else:
-        logging.warn('%s is not a JSON file' % filename)
+        logging.warning('%s is not a JSON file' % filename)
         return dash.no_update
 
 # this callback is triggered when the Download JSON button is pressed
