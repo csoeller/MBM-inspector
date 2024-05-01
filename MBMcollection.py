@@ -130,6 +130,7 @@ class MBMCollectionDF(object): # collection based on dataframe objects
         self._trange= (None,None)
         self.variance_window = variance_window # by default use last 9 localisations for variance/std calculation
         self.median_window = 0 # 0 for median window means "no median filtering"
+        self.lowess_fraction = 0.1
         self.plotbad = plotbad
         
         self.name = name

@@ -210,12 +210,13 @@ def btnfunc(n_clicks):
     settings = {}
     settings['beads'] = mbm.beadisgood.copy()
     settings['Median_window'] = mbm.median_window
+    settings['Lowess_fraction'] = mbm.lowess_fraction
     settings['Filename'] = mbm.name
     return dict(content=json.dumps(settings, indent=4),filename=fname)
 
 # this callback is triggered when the lowess button is pressed
-# and generates a new output that is new graphs that will
-# now contain a lowess smoothed version of the mean curve
+# and generates new output graphs that will
+# now also contain a lowess smoothed version of the mean curve
 @callback(
     Output('main-graph', 'figure'),
     Output('stddev-graph', 'figure'),
@@ -229,6 +230,7 @@ def btnfunc(n_clicks):
 def update_graph_lowess(n_clicks,selectedbeads,axis,median_window,lowess_fraction):
     mbm.markasgood_only(*selectedbeads)
     mbm.median_window = median_window
+    mbm.lowess_fraction = lowess_fraction
     mainfig = mbm.plot_tracks(axis,lowess_frac=lowess_fraction)
     stddevfig = mbm.plot_tracks("std_%s" % axis)
     return (mainfig,stddevfig)
