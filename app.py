@@ -50,15 +50,33 @@ app.layout = html.Div(style={'padding': '2rem'},
                           html.H3(children='FILENAME', style={'textAlign':'center'}, id='filename-label'),
                           dbc.Stack(
                               [
-                                  html.A("Median Filter"),
+                                  html.A("Median Filter",id='text-median-filter'),
+                                  dbc.Tooltip(
+                                      "Size of median filter window (0 = no filter)",
+                                      target='text-median-filter',
+                                      placement='right',
+                                  ),
                                   html.Div( # placing it in a Div allows us to set the width as a percentage of window width
                                       dcc.Slider(0, 21, 1,
                                                  value=5,
                                                  id='median-slider'
                                                  ),
                                       style={'width':'25%'}),
+                                  html.A("Alignment Fraction %", id='text-align-frac'),
+                                  html.Div( # placing it in a Div allows us to set the width as a percentage of window width
+                                      dcc.Slider(5, 100, 5,
+                                                 value=100,
+                                                 id='afraction-slider'
+                                                 ),
+                                      style={'width':'25%'}),
+                                  dbc.Tooltip(
+                                      "Fraction of the total acquisition length used for trajectory alignment",
+                                      target='text-align-frac',
+                                      placement='right',
+                                  ),
                               ],
                               direction="horizontal",
+                              gap = 2,
                           ),
                           dbc.Stack(
                               [
@@ -131,12 +149,13 @@ app.layout = html.Div(style={'padding': '2rem'},
     Input('bead-selection', 'value'),
     Input('axes','value'),
     Input('median-slider','value'),
+    Input('afraction-slider','value'),
     prevent_initial_call='initial_duplicate',
 )
-def update_graph(selectedbeads,axis,median_window):
+def update_graph(selectedbeads,axis,median_window,afraction_percent):
     mbm.markasgood_only(*selectedbeads)
     mbm.median_window = median_window
-    mainfig = mbm.plot_tracks(axis)
+    mainfig = mbm.plot_tracks(axis,tmax = 0.01*afraction_percent*mbm.t.max())
     stddevfig = mbm.plot_tracks("std_%s" % axis)
     return (mainfig,stddevfig)
 
@@ -203,14 +222,16 @@ def update_output_json(contents, filename):
 @callback(
     Output("download-json", "data"),
     Input("btn_json", "n_clicks"),
+    State('afraction-slider','value'),
     prevent_initial_call=True,
 )
-def btnfunc(n_clicks):
+def btnfunc(n_clicks,afraction_percentage):
     fname = "%s-settings.json" % mbm.name
     settings = {}
     settings['beads'] = mbm.beadisgood.copy()
     settings['Median_window'] = mbm.median_window
     settings['Lowess_fraction'] = mbm.lowess_fraction
+    settings['Alignment_fraction'] = 0.01*afraction_percentage
     settings['Filename'] = mbm.name
     return dict(content=json.dumps(settings, indent=4),filename=fname)
 
@@ -225,13 +246,14 @@ def btnfunc(n_clicks):
     State('axes','value'),
     State('median-slider','value'),
     State('lowess-slider','value'),
+    State('afraction-slider','value'),
     prevent_initial_call=True,
 )
-def update_graph_lowess(n_clicks,selectedbeads,axis,median_window,lowess_fraction):
+def update_graph_lowess(n_clicks,selectedbeads,axis,median_window,lowess_fraction,afraction_percent):
     mbm.markasgood_only(*selectedbeads)
     mbm.median_window = median_window
     mbm.lowess_fraction = lowess_fraction
-    mainfig = mbm.plot_tracks(axis,lowess_frac=lowess_fraction)
+    mainfig = mbm.plot_tracks(axis,lowess_frac=lowess_fraction,tmax = 0.01*afraction_percent*mbm.t.max())
     stddevfig = mbm.plot_tracks("std_%s" % axis)
     return (mainfig,stddevfig)
 
