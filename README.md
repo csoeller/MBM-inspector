@@ -74,3 +74,7 @@ You can also download a JSON file that records the bead selection, file name of 
 We have now also added an upload functionality that allows loading the saved settings from a JSON file downloaded previously. Currently, only the bead selections are restored, in future we may also "replay" the median and lowess filter settings from the JSON settings file.
 
 As the lowess filter can be slow to compute it only gets generated when the `Lowess Filter` button is pressed (see also button tooltip).
+
+## Authors
+
+C. Soeller et al
