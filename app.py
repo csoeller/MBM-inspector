@@ -87,9 +87,10 @@ app.layout = html.Div(style={'padding': '2rem'},
                                       placement='right',
                                   ),
                                   html.Div( # placing it in a Div allows us to set the width as a percentage of window width
-                                      dcc.Slider(0.01, 0.2,
+                                      dcc.Slider(0.005, 0.2,
                                                  step=None,
                                                  marks={
+                                                     0.005: '5e-3',
                                                      0.01: '0.01',
                                                      0.02: '0.02',
                                                      0.03: '0.03',
