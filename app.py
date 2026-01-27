@@ -34,7 +34,7 @@ app.layout = html.Div(style={'padding': '2rem'},
                               id='upload-data',
                               children=html.Div([
                                   'Drag and Drop or ',
-                                  html.A('Select Beat Data File (.npz format)')
+                                  html.A('Select MBM Bead Data File (.npz format)')
                               ]),
                               style={
                                   'width': '100%',
